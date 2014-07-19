@@ -74,7 +74,9 @@ public class WorkerStorageTest {
     mTfs.delete(fid, true);
 
     WorkerStorage ws =
-        new WorkerStorage(mMasterAddress, mWorkerAddress, mWorkerDataFolder, WORKER_CAPACITY_BYTES);
+        new WorkerStorage(mMasterAddress, mWorkerDataFolder, WORKER_CAPACITY_BYTES);
+    ws.setWorkerAddress(mWorkerAddress);
+    ws.initialize();
     String orpahnblock = ws.getUnderfsOrphansFolder() + Constants.PATH_SEPARATOR + bid;
     UnderFileSystem ufs = UnderFileSystem.get(orpahnblock);
     Assert.assertFalse("Orphan block file isn't deleted from workerDataFolder", new File(
@@ -116,6 +118,8 @@ public class WorkerStorageTest {
     // try a non-numerical file name
     File unknownFile = new File(mWorkerDataFolder + Constants.PATH_SEPARATOR + "xyz");
     unknownFile.createNewFile();
-    new WorkerStorage(mMasterAddress, mWorkerAddress, mWorkerDataFolder, WORKER_CAPACITY_BYTES);
+    WorkerStorage ws = new WorkerStorage(mMasterAddress, mWorkerDataFolder, WORKER_CAPACITY_BYTES);
+    ws.setWorkerAddress(mWorkerAddress);
+    ws.initialize();
   }
 }

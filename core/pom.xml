@@ -346,9 +346,11 @@
         <version>2.14</version>
         <configuration>
           <argLine>-Dufs=${ufs}</argLine>
+          <!--
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <forkCount>3</forkCount>
           <reuseForks>true</reuseForks>
+          -->
           <!--<parallel>classes</parallel>-->
         </configuration>
       </plugin>

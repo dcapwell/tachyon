@@ -16,11 +16,15 @@ package tachyon.master;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TNonblockingServerSocketUtil;
 import org.apache.thrift.transport.TTransportException;
 
 import tachyon.Constants;
@@ -70,6 +74,8 @@ public class TachyonMaster {
 
   private LeaderSelectorClient mLeaderSelectorClient = null;
 
+  private final AtomicInteger port = new AtomicInteger(0);
+
   public TachyonMaster(InetSocketAddress address, int webPort, int selectorThreads,
       int acceptQueueSizePerThreads, int workerThreads) {
     if (CommonConf.get().USE_ZOOKEEPER) {
@@ -105,6 +111,14 @@ public class TachyonMaster {
       LOG.error(e.getMessage(), e);
       CommonUtils.runtimeException(e);
     }
+  }
+
+  public int getLocalPort() {
+    // impls a blocking wait until the port shows up
+    while (port.get() == 0) {
+      CommonUtils.sleepMs(null, 10);
+    }
+    return port.get();
   }
 
   /**
@@ -166,6 +180,7 @@ public class TachyonMaster {
         new MasterService.Processor<MasterServiceHandler>(mMasterServiceHandler);
 
     mServerTNonblockingServerSocket = new TNonblockingServerSocket(mMasterAddress);
+    port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
     mMasterServiceServer =
         new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
             mServerTNonblockingServerSocket).processor(masterServiceProcessor)

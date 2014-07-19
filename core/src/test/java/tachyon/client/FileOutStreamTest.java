@@ -62,7 +62,7 @@ public class FileOutStreamTest {
   public void writeTest1() throws IOException, InvalidPathException, FileAlreadyExistException {
     for (int k = MIN_LEN; k <= MAX_LEN; k += DELTA) {
       for (WriteType op : WriteType.values()) {
-        writeTest1Util("/root/testFile_" + k + "_" + op + "_" + System.nanoTime(), op, k);
+        writeTest1Util("/root/testFile_" + k + "_" + op, op, k);
       }
     }
   }
@@ -111,7 +111,7 @@ public class FileOutStreamTest {
   public void writeTest2() throws IOException, InvalidPathException, FileAlreadyExistException {
     for (int k = MIN_LEN; k <= MAX_LEN; k += DELTA) {
       for (WriteType op : WriteType.values()) {
-        writeTest2Util("/root/testFile_" + k + "_" + op + "_" + System.nanoTime(), op, k);
+        writeTest2Util("/root/testFile_" + k + "_" + op, op, k);
       }
     }
   }
@@ -158,7 +158,7 @@ public class FileOutStreamTest {
   public void writeTest3() throws IOException, InvalidPathException, FileAlreadyExistException {
     for (int k = MIN_LEN; k <= MAX_LEN; k += DELTA) {
       for (WriteType op : WriteType.values()) {
-        writeTest3Util("/root/testFile_" + k + "_" + op + "_" + System.nanoTime(), op, k);
+        writeTest3Util("/root/testFile_" + k + "_" + op, op, k);
       }
     }
   }

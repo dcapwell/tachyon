@@ -288,22 +288,23 @@ public class WorkerStorage {
   /**
    * @param masterAddress
    *          The TachyonMaster's address
-   * @param workerAddress
-   *          This TachyonWorker's address
    * @param dataFolder
    *          This TachyonWorker's local folder's path
    * @param memoryCapacityBytes
    *          The maximum memory space this TachyonWorker can use, in bytes
    */
-  public WorkerStorage(InetSocketAddress masterAddress, InetSocketAddress workerAddress,
+  public WorkerStorage(InetSocketAddress masterAddress,
       String dataFolder, long memoryCapacityBytes) {
     COMMON_CONF = CommonConf.get();
 
     mMasterAddress = masterAddress;
     mMasterClient = new MasterClient(mMasterAddress);
+    mLocalDataFolder = new File(dataFolder);
 
-    mWorkerAddress = workerAddress;
     mWorkerSpaceCounter = new WorkerSpaceCounter(memoryCapacityBytes);
+  }
+
+  public void initialize() {
     mWorkerId = 0;
     while (mWorkerId == 0) {
       try {
@@ -325,7 +326,7 @@ public class WorkerStorage {
       }
     }
 
-    mLocalDataFolder = new File(dataFolder);
+
     mLocalUserFolder =
         new File(mLocalDataFolder.toString(), WorkerConf.get().USER_TEMP_RELATIVE_FOLDER);
     mUnderfsWorkerFolder = CommonUtils.concat(COMMON_CONF.UNDERFS_WORKERS_FOLDER, mWorkerId);
@@ -355,6 +356,10 @@ public class WorkerStorage {
 
     LOG.info("Current Worker Info: ID " + mWorkerId + ", ADDRESS: " + mWorkerAddress
         + ", MemoryCapacityBytes: " + mWorkerSpaceCounter.getCapacityBytes());
+  }
+
+  public void setWorkerAddress(final InetSocketAddress address) {
+    this.mWorkerAddress = address;
   }
 
   /**

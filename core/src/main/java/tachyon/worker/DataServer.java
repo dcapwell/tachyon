@@ -79,9 +79,6 @@ public class DataServer implements Runnable {
     }
   }
 
-  /**
-   * Port bound to the server.  If 0 was set to the port, this is randomly generated.
-   */
   public int getLocalPort() {
     return mServerChannel.socket().getLocalPort();
   }
