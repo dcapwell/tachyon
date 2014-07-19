@@ -187,28 +187,21 @@ public class TachyonWorker implements Runnable {
    * @param memoryCapacityBytes
    *          The maximum memory space this TachyonWorker can use, in bytes
    */
-  private TachyonWorker(
-      final InetSocketAddress masterAddress,
-      final InetSocketAddress workerAddress,
-      final int dataPort,
-      final int selectorThreads,
-      final int acceptQueueSizePerThreads,
-      final int workerThreads,
-      final String dataFolder,
-      final long memoryCapacityBytes) {
+  private TachyonWorker(InetSocketAddress masterAddress, InetSocketAddress workerAddress,
+      int dataPort, int selectorThreads, int acceptQueueSizePerThreads, int workerThreads,
+      String dataFolder, long memoryCapacityBytes) {
     MasterAddress = masterAddress;
 
     mWorkerStorage =
         new WorkerStorage(MasterAddress, dataFolder, memoryCapacityBytes);
+
+    mWorkerServiceHandler = new WorkerServiceHandler(mWorkerStorage);
 
     mDataServer =
         new DataServer(new InetSocketAddress(workerAddress.getHostName(), dataPort),
             mWorkerStorage);
     mDataServerThread = new Thread(mDataServer);
     this.dataPort.set(mDataServer.getLocalPort());
-
-
-    mWorkerServiceHandler = new WorkerServiceHandler(mWorkerStorage);
 
     mHeartbeatThread = new Thread(this);
     try {
@@ -220,12 +213,9 @@ public class TachyonWorker implements Runnable {
       port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
       mServer =
           new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
-              mServerTNonblockingServerSocket)
-              .processor(processor)
+              mServerTNonblockingServerSocket).processor(processor)
               .selectorThreads(selectorThreads)
-              .acceptQueueSizePerThread(acceptQueueSizePerThreads)
-              .workerThreads(workerThreads));
-
+              .acceptQueueSizePerThread(acceptQueueSizePerThreads).workerThreads(workerThreads));
     } catch (TTransportException e) {
       LOG.error(e.getMessage(), e);
       CommonUtils.runtimeException(e);

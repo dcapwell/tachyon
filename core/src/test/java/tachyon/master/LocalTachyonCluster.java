@@ -218,12 +218,14 @@ public class LocalTachyonCluster {
     mMasterThread = new Thread(runMaster);
     mMasterThread.start();
 
+    CommonUtils.sleepMs(null, 10);
+    
     System.setProperty("tachyon.master.port", getMasterPort() + "");
     System.setProperty("tachyon.master.web.port", (getMasterPort() + 1) + "");
 
     mWorker =
         TachyonWorker.createWorker(new InetSocketAddress(mLocalhostName, getMasterPort()),
-            new InetSocketAddress(mLocalhostName, Constants.DEFAULT_WORKER_PORT - 1000), 0, 1, 1, 1,
+            new InetSocketAddress(mLocalhostName, 0), 0, 1, 1, 1,
             mWorkerDataFolder, mWorkerCapacityBytes);
     Runnable runWorker = new Runnable() {
       @Override

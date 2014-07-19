@@ -89,7 +89,10 @@ public class TachyonMaster {
     mWorkerThreads = workerThreads;
 
     try {
-      mMasterAddress = address;
+      mServerTNonblockingServerSocket = new TNonblockingServerSocket(mMasterAddress);
+      port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
+
+      mMasterAddress = new InetSocketAddress(address.getHostName(), getLocalPort());
       String journalFolder = MasterConf.get().JOURNAL_FOLDER;
       if (!isFormatted(journalFolder, MasterConf.get().FORMAT_FILE_PREFIX)) {
         LOG.error("Tachyon was not formatted!");
@@ -102,7 +105,7 @@ public class TachyonMaster {
         CommonConf conf = CommonConf.get();
         mLeaderSelectorClient =
             new LeaderSelectorClient(conf.ZOOKEEPER_ADDRESS, conf.ZOOKEEPER_ELECTION_PATH,
-                conf.ZOOKEEPER_LEADER_PATH, address.getHostName() + ":" + address.getPort());
+                conf.ZOOKEEPER_LEADER_PATH, mMasterAddress.getHostName() + ":" + mMasterAddress.getPort());
         mEditLogProcessor = new EditLogProcessor(mJournal, journalFolder, mMasterInfo);
         Thread logProcessor = new Thread(mEditLogProcessor);
         logProcessor.start();
@@ -179,8 +182,6 @@ public class TachyonMaster {
     MasterService.Processor<MasterServiceHandler> masterServiceProcessor =
         new MasterService.Processor<MasterServiceHandler>(mMasterServiceHandler);
 
-    mServerTNonblockingServerSocket = new TNonblockingServerSocket(mMasterAddress);
-    port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
     mMasterServiceServer =
         new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
             mServerTNonblockingServerSocket).processor(masterServiceProcessor)
