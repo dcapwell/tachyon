@@ -158,15 +158,16 @@ public class TachyonWorker implements Runnable {
 
   private WorkerServiceHandler mWorkerServiceHandler;
 
-//  private volatile DataServer mDataServer;
+  private volatile DataServer mDataServer;
 
-//  private Thread mDataServerThread;
+  private Thread mDataServerThread;
 
   private Thread mHeartbeatThread;
 
   private volatile boolean mStop = false;
 
   private final AtomicInteger port = new AtomicInteger(0);
+  private final AtomicInteger dataPort = new AtomicInteger(0);
 
   /**
    * @param masterAddress
@@ -200,11 +201,11 @@ public class TachyonWorker implements Runnable {
     mWorkerStorage =
         new WorkerStorage(MasterAddress, dataFolder, memoryCapacityBytes);
 
-//    mDataServer =
-//        new DataServer(new InetSocketAddress(workerAddress.getHostName(), dataPort),
-//            mWorkerStorage);
-//    mDataServerThread = new Thread(mDataServer);
-
+    mDataServer =
+        new DataServer(new InetSocketAddress(workerAddress.getHostName(), dataPort),
+            mWorkerStorage);
+    mDataServerThread = new Thread(mDataServer);
+    this.dataPort.set(mDataServer.getLocalPort());
 
 
     mWorkerServiceHandler = new WorkerServiceHandler(mWorkerStorage);
@@ -240,6 +241,14 @@ public class TachyonWorker implements Runnable {
       CommonUtils.sleepMs(null, 10);
     }
     return port.get();
+  }
+
+  public int getDataPort() {
+    // impls a blocking wait until the port shows up
+    while (dataPort.get() == 0) {
+      CommonUtils.sleepMs(null, 10);
+    }
+    return dataPort.get();
   }
 
   /**
@@ -317,7 +326,7 @@ public class TachyonWorker implements Runnable {
    * Start the data server thread and heartbeat thread of this TachyonWorker.
    */
   public void start() {
-//    mDataServerThread.start();
+    mDataServerThread.start();
     mHeartbeatThread.start();
 
     LOG.info("The worker server started @ " + WorkerAddress);
@@ -334,10 +343,10 @@ public class TachyonWorker implements Runnable {
   public void stop() throws IOException, InterruptedException {
     mStop = true;
     mWorkerStorage.stop();
-//    mDataServer.close();
+    mDataServer.close();
     mServer.stop();
     mServerTNonblockingServerSocket.close();
-    while (/* !mDataServer.isClosed() || */ mServer.isServing() || mHeartbeatThread.isAlive()) {
+    while (!mDataServer.isClosed() || mServer.isServing() || mHeartbeatThread.isAlive()) {
       // TODO The reason to stop and close again is due to some issues in Thrift.
       mServer.stop();
       mServerTNonblockingServerSocket.close();

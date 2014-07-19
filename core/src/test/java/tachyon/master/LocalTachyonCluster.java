@@ -134,6 +134,10 @@ public class LocalTachyonCluster {
     return mWorker.getLocalPort();
   }
 
+  public int getWorkerDataPort() {
+    return mWorker.getDataPort();
+  }
+
   private void deleteDir(String path) throws IOException {
     UnderFileSystem ufs = UnderFileSystem.get(path);
 
@@ -235,7 +239,7 @@ public class LocalTachyonCluster {
     mWorkerThread.start();
 
     System.setProperty("tachyon.worker.port", getWorkerPort() + "");
-    System.setProperty("tachyon.worker.data.port", (getWorkerPort() + 1) + "");
+    System.setProperty("tachyon.worker.data.port", getWorkerDataPort() + "");
   }
 
   /**
