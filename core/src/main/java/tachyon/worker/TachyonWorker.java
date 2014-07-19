@@ -216,6 +216,10 @@ public class TachyonWorker implements Runnable {
     }
   }
 
+  public int getLocalPort() {
+    return mDataServer.getLocalPort();
+  }
+
   /**
    * Get the worker server handler class. This is for unit test only.
    * 
