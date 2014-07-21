@@ -16,10 +16,8 @@ package tachyon.master;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
@@ -89,7 +87,7 @@ public class TachyonMaster {
     mWorkerThreads = workerThreads;
 
     try {
-      mServerTNonblockingServerSocket = new TNonblockingServerSocket(mMasterAddress);
+      mServerTNonblockingServerSocket = new TNonblockingServerSocket(address);
       port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
 
       mMasterAddress = new InetSocketAddress(address.getHostName(), getLocalPort());

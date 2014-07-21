@@ -50,9 +50,9 @@ public class LocalTachyonCluster {
     CommonUtils.sleepMs(null, Constants.SECOND_MS);
   }
 
-  private volatile TachyonMaster mMaster = null;
+  private TachyonMaster mMaster = null;
 
-  private volatile TachyonWorker mWorker = null;
+  private TachyonWorker mWorker = null;
 //  private int mMasterPort;
 //  private int mWorkerPort;
 
@@ -182,8 +182,10 @@ public class LocalTachyonCluster {
     System.setProperty("tachyon.home", mTachyonHome);
     System.setProperty("tachyon.master.hostname", mLocalhostName);
     System.setProperty("tachyon.master.journal.folder", masterJournalFolder);
-
-
+    System.setProperty("tachyon.master.port", 0 + "");
+    System.setProperty("tachyon.master.web.port", 0 + "");
+    System.setProperty("tachyon.worker.port", 0 + "");
+    System.setProperty("tachyon.worker.data.port", 0 + "");
     System.setProperty("tachyon.worker.data.folder", mWorkerDataFolder);
     System.setProperty("tachyon.worker.memory.size", mWorkerCapacityBytes + "");
     System.setProperty("tachyon.worker.to.master.heartbeat.interval.ms", 15 + "");
