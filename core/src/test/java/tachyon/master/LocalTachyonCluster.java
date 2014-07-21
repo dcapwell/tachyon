@@ -228,6 +228,8 @@ public class LocalTachyonCluster {
     mWorker =
         TachyonWorker.createWorker(new InetSocketAddress(mLocalhostName, getMasterPort()),
             new InetSocketAddress(mLocalhostName, 0), 0, 1, 1, 1,
+            // tests work if the work's ports are hard coded: RemoteBlockInStreamTest, DataServerTest
+//            new InetSocketAddress(mLocalhostName, Constants.DEFAULT_WORKER_PORT - 1000), (Constants.DEFAULT_WORKER_PORT - 1000) + 1, 1, 1, 1,
             mWorkerDataFolder, mWorkerCapacityBytes);
     Runnable runWorker = new Runnable() {
       @Override

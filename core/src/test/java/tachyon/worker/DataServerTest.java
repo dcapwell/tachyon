@@ -29,6 +29,7 @@ import tachyon.client.WriteType;
 import tachyon.master.LocalTachyonCluster;
 import tachyon.thrift.FileAlreadyExistException;
 import tachyon.thrift.InvalidPathException;
+import tachyon.thrift.NetAddress;
 import tachyon.worker.DataServerMessage;
 
 /**
@@ -62,9 +63,11 @@ public class DataServerTest {
     long blockId = mTFS.getBlockId(fileId, 0);
     DataServerMessage sendMsg;
     sendMsg = DataServerMessage.createBlockRequestMessage(blockId, 0, 6);
+    NetAddress firstBlock = mTFS.getFileBlocks(fileId).get(0).getLocations().get(0);
+    // tests assumes data port is always port + 1.  Don't see a way to get the data port
+    // from thrift.
     SocketChannel socketChannel =
-        SocketChannel.open(new InetSocketAddress(mTFS.getFileBlocks(fileId).get(0).getLocations()
-            .get(0).mHost, mTFS.getFileBlocks(fileId).get(0).getLocations().get(0).mPort + 1));
+        SocketChannel.open(new InetSocketAddress(firstBlock.mHost, firstBlock.mPort + 1));
     while (!sendMsg.finishSending()) {
       sendMsg.send(socketChannel);
     }
