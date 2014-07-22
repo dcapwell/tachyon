@@ -32,6 +32,7 @@ import tachyon.Version;
 import tachyon.conf.WorkerConf;
 import tachyon.thrift.BlockInfoException;
 import tachyon.thrift.Command;
+import tachyon.thrift.NetAddress;
 import tachyon.thrift.WorkerService;
 import tachyon.util.CommonUtils;
 import tachyon.util.NetworkUtils;
@@ -150,7 +151,7 @@ public class TachyonWorker implements Runnable {
   }
 
   private final InetSocketAddress MasterAddress;
-  private final InetSocketAddress WorkerAddress;
+  private final NetAddress WorkerAddress;
   private TServer mServer;
 
   private TNonblockingServerSocket mServerTNonblockingServerSocket;
@@ -220,7 +221,11 @@ public class TachyonWorker implements Runnable {
       LOG.error(e.getMessage(), e);
       CommonUtils.runtimeException(e);
     }
-    WorkerAddress = new InetSocketAddress(workerAddress.getHostName(), getLocalPort());
+    WorkerAddress = new NetAddress(
+        workerAddress.getAddress().getCanonicalHostName(),
+        getLocalPort(),
+        getDataPort()
+    );
     mWorkerStorage.setWorkerAddress(WorkerAddress);
     mWorkerStorage.initialize();
   }

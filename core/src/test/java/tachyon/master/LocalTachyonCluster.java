@@ -29,6 +29,7 @@ import tachyon.conf.CommonConf;
 import tachyon.conf.MasterConf;
 import tachyon.conf.UserConf;
 import tachyon.conf.WorkerConf;
+import tachyon.thrift.NetAddress;
 import tachyon.util.CommonUtils;
 import tachyon.worker.TachyonWorker;
 
@@ -122,8 +123,8 @@ public class LocalTachyonCluster {
     return mWorker;
   }
 
-  public InetSocketAddress getWorkerAddress() {
-    return new InetSocketAddress(mLocalhostName, getWorkerPort());
+  public NetAddress getWorkerAddress() {
+    return new NetAddress(mLocalhostName, getWorkerPort(), getWorkerDataPort());
   }
 
   public String getWorkerDataFolder() {

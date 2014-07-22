@@ -67,7 +67,7 @@ public class DataServerTest {
     // tests assumes data port is always port + 1.  Don't see a way to get the data port
     // from thrift.
     SocketChannel socketChannel =
-        SocketChannel.open(new InetSocketAddress(firstBlock.mHost, firstBlock.mPort + 1));
+        SocketChannel.open(new InetSocketAddress(firstBlock.mHost, firstBlock.mSecondaryPort));
     while (!sendMsg.finishSending()) {
       sendMsg.send(socketChannel);
     }
@@ -91,7 +91,7 @@ public class DataServerTest {
     sendMsg = DataServerMessage.createBlockRequestMessage(blockId, 2, 6);
     SocketChannel socketChannel =
         SocketChannel.open(new InetSocketAddress(mTFS.getFileBlocks(fileId).get(0).getLocations()
-            .get(0).mHost, mTFS.getFileBlocks(fileId).get(0).getLocations().get(0).mPort + 1));
+            .get(0).mHost, mTFS.getFileBlocks(fileId).get(0).getLocations().get(0).mSecondaryPort));
     while (!sendMsg.finishSending()) {
       sendMsg.send(socketChannel);
     }
@@ -113,7 +113,7 @@ public class DataServerTest {
     DataServerMessage sendMsg = DataServerMessage.createBlockRequestMessage(blockId);
     SocketChannel socketChannel =
         SocketChannel.open(new InetSocketAddress(mTFS.getFileBlocks(fileId).get(0).getLocations()
-            .get(0).mHost, mTFS.getFileBlocks(fileId).get(0).getLocations().get(0).mPort + 1));
+            .get(0).mHost, mTFS.getFileBlocks(fileId).get(0).getLocations().get(0).mSecondaryPort));
     while (!sendMsg.finishSending()) {
       sendMsg.send(socketChannel);
     }

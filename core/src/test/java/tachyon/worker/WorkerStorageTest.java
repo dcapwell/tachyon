@@ -31,6 +31,7 @@ import tachyon.UnderFileSystem;
 import tachyon.client.TachyonFS;
 import tachyon.client.WriteType;
 import tachyon.master.LocalTachyonCluster;
+import tachyon.thrift.NetAddress;
 import tachyon.worker.WorkerStorage;
 
 /**
@@ -40,7 +41,7 @@ public class WorkerStorageTest {
   private LocalTachyonCluster mLocalTachyonCluster = null;
   private TachyonFS mTfs = null;
   private InetSocketAddress mMasterAddress = null;
-  private InetSocketAddress mWorkerAddress = null;
+  private NetAddress mWorkerAddress = null;
   private String mWorkerDataFolder = null;
 
   private final long WORKER_CAPACITY_BYTES = 100000;
