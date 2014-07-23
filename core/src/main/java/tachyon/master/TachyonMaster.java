@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
-import org.apache.thrift.transport.TNonblockingServerSocketUtil;
 import org.apache.thrift.transport.TTransportException;
 
 import tachyon.Constants;
@@ -35,6 +34,7 @@ import tachyon.conf.CommonConf;
 import tachyon.conf.MasterConf;
 import tachyon.thrift.MasterService;
 import tachyon.util.CommonUtils;
+import tachyon.util.NetworkUtils;
 import tachyon.web.UIWebServer;
 
 /**
@@ -90,7 +90,7 @@ public class TachyonMaster {
 
     try {
       mServerTNonblockingServerSocket = new TNonblockingServerSocket(address);
-      port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
+      port.set(NetworkUtils.getPort(mServerTNonblockingServerSocket));
 
       mMasterAddress = new InetSocketAddress(address.getHostName(), getLocalPort());
       String journalFolder = MasterConf.get().JOURNAL_FOLDER;

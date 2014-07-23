@@ -25,7 +25,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
-import org.apache.thrift.transport.TNonblockingServerSocketUtil;
 import org.apache.thrift.transport.TTransportException;
 
 import tachyon.Constants;
@@ -212,7 +211,7 @@ public class TachyonWorker implements Runnable {
           new WorkerService.Processor<WorkerServiceHandler>(mWorkerServiceHandler);
 
       mServerTNonblockingServerSocket = new TNonblockingServerSocket(workerAddress);
-      port.set(TNonblockingServerSocketUtil.getPort(mServerTNonblockingServerSocket));
+      port.set(NetworkUtils.getPort(mServerTNonblockingServerSocket));
       mServer =
           new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
               mServerTNonblockingServerSocket).processor(processor)
