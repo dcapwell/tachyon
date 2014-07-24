@@ -6,7 +6,7 @@ title: Building Tachyon Master Branch
 This guide describes how to compile Tachyon from the beginning.
 
 The prerequisite for this guide is that you have [Java 6 (or above)](Java-Setup.html),
-[Maven](Maven.html), and [Thrift 0.9](Thrift.html) (Optional) installed.
+[Maven](Maven.html), and [Thrift 0.9.1](Thrift.html) (Optional) installed.
 
 Checkout the Tachyon master branch from Github and package:
 
@@ -56,4 +56,10 @@ To run all unit tests:
 
 To run all the unit tests with under filesystem other than local filesystem:
 
-    $ mvn test [ -Dhadoop.version=x.x.x ] -Dintegration [ -Dufs=tachyon.LocalMiniDFSCluster ]
+    $ mvn test [ -Dhadoop.version=x.x.x ] [ -Dtest.profile=hdfs ]
+
+Current supported profiles:
+
+    local #default, uses local disk
+    hdfs # uses hadoop's minicluster
+    glusterfs # uses glusterfs
