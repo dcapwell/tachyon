@@ -32,6 +32,7 @@ import tachyon.Version;
 import tachyon.conf.WorkerConf;
 import tachyon.thrift.BlockInfoException;
 import tachyon.thrift.Command;
+import tachyon.thrift.DataService;
 import tachyon.thrift.WorkerService;
 import tachyon.util.CommonUtils;
 import tachyon.util.NetworkUtils;
@@ -158,9 +159,8 @@ public class TachyonWorker implements Runnable {
 
   private WorkerServiceHandler mWorkerServiceHandler;
 
-  private DataServer mDataServer;
-
-  private Thread mDataServerThread;
+  private final TNonblockingServerSocket mDataServerTNonblockingServerSocket;
+  private final TThreadedSelectorServer mDataServer;
 
   private Thread mHeartbeatThread;
 
@@ -195,10 +195,23 @@ public class TachyonWorker implements Runnable {
 
     mWorkerServiceHandler = new WorkerServiceHandler(mWorkerStorage);
 
-    mDataServer =
-        new DataServer(new InetSocketAddress(workerAddress.getHostName(), dataPort),
-            mWorkerStorage);
-    mDataServerThread = new Thread(mDataServer);
+//    mDataServer =
+//        new DataServer(new InetSocketAddress(workerAddress.getHostName(), dataPort),
+//            mWorkerStorage);
+    try {
+      DataService.Processor<DataServiceHandler> processor =
+          new DataService.Processor<DataServiceHandler>(new DataServiceHandler());
+      mDataServerTNonblockingServerSocket =
+          new TNonblockingServerSocket(new InetSocketAddress(workerAddress.getHostName(), dataPort));
+      mDataServer =
+          new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
+              mDataServerTNonblockingServerSocket).processor(processor)
+              .selectorThreads(selectorThreads)
+              .acceptQueueSizePerThread(acceptQueueSizePerThreads).workerThreads(workerThreads));
+    } catch (TTransportException e) {
+      LOG.error(e.getMessage(), e);
+      throw Throwables.propagate(e);
+    }
 
     mHeartbeatThread = new Thread(this);
     try {
@@ -293,7 +306,6 @@ public class TachyonWorker implements Runnable {
    * Start the data server thread and heartbeat thread of this TachyonWorker.
    */
   public void start() {
-    mDataServerThread.start();
     mHeartbeatThread.start();
 
     LOG.info("The worker server started @ " + WorkerAddress);
@@ -310,10 +322,11 @@ public class TachyonWorker implements Runnable {
   public void stop() throws IOException, InterruptedException {
     mStop = true;
     mWorkerStorage.stop();
-    mDataServer.close();
+    mDataServer.stop();
+    mDataServerTNonblockingServerSocket.close();
     mServer.stop();
     mServerTNonblockingServerSocket.close();
-    while (!mDataServer.isClosed() || mServer.isServing() || mHeartbeatThread.isAlive()) {
+    while (mDataServer.isServing() || mServer.isServing() || mHeartbeatThread.isAlive()) {
       // TODO The reason to stop and close again is due to some issues in Thrift.
       mServer.stop();
       mServerTNonblockingServerSocket.close();
