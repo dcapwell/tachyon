@@ -205,10 +205,13 @@ public class TachyonWorker implements Runnable {
       mDataServerTNonblockingServerSocket =
           new TNonblockingServerSocket(dataAddress);
       mDataServer =
-          new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
-              mDataServerTNonblockingServerSocket).processor(processor)
-              .selectorThreads(selectorThreads)
-              .acceptQueueSizePerThread(acceptQueueSizePerThreads).workerThreads(workerThreads));
+          new TThreadedSelectorServer(
+              new TThreadedSelectorServer.Args(mDataServerTNonblockingServerSocket)
+//                .outputProtocolFactory()
+                .processor(processor)
+                .selectorThreads(selectorThreads)
+                .acceptQueueSizePerThread(acceptQueueSizePerThreads)
+                .workerThreads(workerThreads));
 
       mDataServerThread = new Thread() {
         @Override
