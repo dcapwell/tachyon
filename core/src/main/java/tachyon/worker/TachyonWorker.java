@@ -28,6 +28,7 @@ import org.apache.thrift.transport.TTransportException;
 import com.google.common.base.Throwables;
 
 import tachyon.Constants;
+import tachyon.Users;
 import tachyon.Version;
 import tachyon.conf.WorkerConf;
 import tachyon.thrift.BlockInfoException;
@@ -195,12 +196,10 @@ public class TachyonWorker implements Runnable {
 
     mWorkerServiceHandler = new WorkerServiceHandler(mWorkerStorage);
 
-//    mDataServer =
-//        new DataServer(new InetSocketAddress(workerAddress.getHostName(), dataPort),
-//            mWorkerStorage);
     try {
+      final BlocksLocker locker = new BlocksLocker(mWorkerStorage, Users.sDATASERVER_USER_ID);
       DataService.Processor<DataServiceHandler> processor =
-          new DataService.Processor<DataServiceHandler>(new DataServiceHandler());
+          new DataService.Processor<DataServiceHandler>(new DataServiceHandler(locker));
       mDataServerTNonblockingServerSocket =
           new TNonblockingServerSocket(new InetSocketAddress(workerAddress.getHostName(), dataPort));
       mDataServer =
