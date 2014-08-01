@@ -310,3 +310,22 @@ service WorkerService {
 
   void userHeartbeat(1: i64 userId)   // Local user send heartbeat to local worker to keep its temp folder.
 }
+
+struct BlockRequest {
+  1: i64 blockId,
+  2: i64 offset,
+  3: i64 len
+}
+
+struct BlockResponse {
+  1: i64 blockId
+  2: i64 offset
+  3: i64 len
+  4: binary data
+}
+
+service DataService {
+  BlockResponse requestBlock(1: BlockRequest request)
+    throws (1: BlockInfoException bie, 2: FileDoesNotExistException fdne,
+      3: TachyonException te)
+}
