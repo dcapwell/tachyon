@@ -162,6 +162,7 @@ public class TachyonWorker implements Runnable {
 
   private final TNonblockingServerSocket mDataServerTNonblockingServerSocket;
   private final TThreadedSelectorServer mDataServer;
+  private final Thread mDataServerThread;
 
   private Thread mHeartbeatThread;
 
@@ -200,13 +201,24 @@ public class TachyonWorker implements Runnable {
       final BlocksLocker locker = new BlocksLocker(mWorkerStorage, Users.sDATASERVER_USER_ID);
       DataService.Processor<DataServiceHandler> processor =
           new DataService.Processor<DataServiceHandler>(new DataServiceHandler(locker));
+      final InetSocketAddress dataAddress = new InetSocketAddress(workerAddress.getHostName(), dataPort);
       mDataServerTNonblockingServerSocket =
-          new TNonblockingServerSocket(new InetSocketAddress(workerAddress.getHostName(), dataPort));
+          new TNonblockingServerSocket(dataAddress);
       mDataServer =
           new TThreadedSelectorServer(new TThreadedSelectorServer.Args(
               mDataServerTNonblockingServerSocket).processor(processor)
               .selectorThreads(selectorThreads)
               .acceptQueueSizePerThread(acceptQueueSizePerThreads).workerThreads(workerThreads));
+
+      mDataServerThread = new Thread() {
+        @Override
+        public void run() {
+          LOG.info("The data server started @ " + dataAddress);
+          mDataServer.serve();
+          LOG.info("The data server ends @ " + dataAddress);
+
+        }
+      };
     } catch (TTransportException e) {
       LOG.error(e.getMessage(), e);
       throw Throwables.propagate(e);
@@ -305,6 +317,7 @@ public class TachyonWorker implements Runnable {
    * Start the data server thread and heartbeat thread of this TachyonWorker.
    */
   public void start() {
+    mDataServerThread.start();
     mHeartbeatThread.start();
 
     LOG.info("The worker server started @ " + WorkerAddress);

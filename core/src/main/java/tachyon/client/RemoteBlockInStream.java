@@ -24,11 +24,19 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
 import tachyon.Constants;
 import tachyon.UnderFileSystem;
 import tachyon.conf.UserConf;
+import tachyon.thrift.BlockRequest;
+import tachyon.thrift.BlockResponse;
 import tachyon.thrift.ClientBlockInfo;
+import tachyon.thrift.DataService;
 import tachyon.thrift.NetAddress;
+import tachyon.thrift.WorkerService;
 import tachyon.worker.DataServerMessage;
 import tachyon.util.CommonUtils;
 
@@ -257,40 +265,66 @@ public class RemoteBlockInStream extends BlockInStream {
 
   private ByteBuffer retrieveByteBufferFromRemoteMachine(InetSocketAddress address, long blockId,
       long offset, long length) throws IOException {
-    SocketChannel socketChannel = SocketChannel.open();
-    socketChannel.connect(address);
+//    SocketChannel socketChannel = SocketChannel.open();
+//    socketChannel.connect(address);
+//
+//    LOG.info("Connected to remote machine " + address + " sent");
+//    DataServerMessage sendMsg =
+//        DataServerMessage.createBlockRequestMessage(blockId, offset, length);
+//    while (!sendMsg.finishSending()) {
+//      sendMsg.send(socketChannel);
+//    }
+//
+//    LOG.info("Data " + blockId + " to remote machine " + address + " sent");
+//
+//    DataServerMessage recvMsg = DataServerMessage.createBlockResponseMessage(false, blockId);
+//    while (!recvMsg.isMessageReady()) {
+//      int numRead = recvMsg.recv(socketChannel);
+//      if (numRead == -1) {
+//        LOG.warn("Read nothing");
+//      }
+//    }
+//    LOG.info("Data " + blockId + " from remote machine " + address + " received");
+//
+//    socketChannel.close();
+//
+//    if (!recvMsg.isMessageReady()) {
+//      LOG.info("Data " + blockId + " from remote machine is not ready.");
+//      return null;
+//    }
+//
+//    if (recvMsg.getBlockId() < 0) {
+//      LOG.info("Data " + recvMsg.getBlockId() + " is not in remote machine.");
+//      return null;
+//    }
+//
+//    return recvMsg.getReadOnlyData();
+
+    final TBinaryProtocol mProtocol =
+        new TBinaryProtocol(new TFramedTransport(new TSocket(address.getHostName(),
+            address.getPort())));
+    final DataService.Client client = new DataService.Client(mProtocol);
 
     LOG.info("Connected to remote machine " + address + " sent");
-    DataServerMessage sendMsg =
-        DataServerMessage.createBlockRequestMessage(blockId, offset, length);
-    while (!sendMsg.finishSending()) {
-      sendMsg.send(socketChannel);
+
+    final BlockRequest request = new BlockRequest();
+    request.setBlockId(blockId);
+    request.setOffset(offset);
+    request.setLen(length);
+
+    try {
+      mProtocol.getTransport().open();
+
+      final BlockResponse rsp = client.requestBlock(request);
+      LOG.info("Data " + blockId + " from remote machine " + address + " received");
+      final ByteBuffer buffer = rsp.data.asReadOnlyBuffer();
+//      buffer.flip();
+      return buffer;
+    } catch (TException e) {
+      throw new IOException(e);
+    } finally {
+      mProtocol.getTransport().close();
     }
-
-    LOG.info("Data " + blockId + " to remote machine " + address + " sent");
-
-    DataServerMessage recvMsg = DataServerMessage.createBlockResponseMessage(false, blockId);
-    while (!recvMsg.isMessageReady()) {
-      int numRead = recvMsg.recv(socketChannel);
-      if (numRead == -1) {
-        LOG.warn("Read nothing");
-      }
-    }
-    LOG.info("Data " + blockId + " from remote machine " + address + " received");
-
-    socketChannel.close();
-
-    if (!recvMsg.isMessageReady()) {
-      LOG.info("Data " + blockId + " from remote machine is not ready.");
-      return null;
-    }
-
-    if (recvMsg.getBlockId() < 0) {
-      LOG.info("Data " + recvMsg.getBlockId() + " is not in remote machine.");
-      return null;
-    }
-
-    return recvMsg.getReadOnlyData();
   }
 
   @Override

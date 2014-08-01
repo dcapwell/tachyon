@@ -3,6 +3,8 @@ package tachyon.worker;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.apache.log4j.Logger;
@@ -78,7 +80,14 @@ public final class DataServiceHandler implements DataService.Iface {
         response.setLen(readLen);
 
         FileChannel channel = closer.register(file.getChannel());
-        response.setData(channel.map(FileChannel.MapMode.READ_ONLY, offset, readLen));
+        //TODO copy on-heap because limitation with thrift server code.  Other servers that
+        // support thrift should be able to support this.
+        // bug in org.apache.thrift.protocol.TBinaryProtocol.writeBinary(TBinaryProtocol.java:183)
+        final MappedByteBuffer data = channel.map(FileChannel.MapMode.READ_ONLY, offset, readLen);
+        final ByteBuffer sendData = ByteBuffer.allocate(data.remaining());
+        sendData.put(data);
+        sendData.flip();
+        response.setData(sendData);
         LOG.info("Response remote requst by reading from " + filePath + " preparation done.");
       } catch (FileNotFoundException e) {
         throw new FileDoesNotExistException(e.getMessage());
