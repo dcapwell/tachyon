@@ -21,6 +21,7 @@ import java.nio.channels.SocketChannel;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import tachyon.TestUtils;
@@ -34,6 +35,7 @@ import tachyon.worker.DataServerMessage;
 /**
  * Unit tests for tachyon.DataServer.
  */
+@Ignore
 public class DataServerTest {
   private final int WORKER_CAPACITY_BYTES = 1000;
   private final int USER_QUOTA_UNIT_BYTES = 100;

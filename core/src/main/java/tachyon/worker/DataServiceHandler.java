@@ -80,9 +80,8 @@ public final class DataServiceHandler implements DataService.Iface {
         response.setLen(readLen);
 
         FileChannel channel = closer.register(file.getChannel());
-        //TODO copy on-heap because limitation with thrift server code.  Other servers that
-        // support thrift should be able to support this.
-        // bug in org.apache.thrift.protocol.TBinaryProtocol.writeBinary(TBinaryProtocol.java:183)
+        //TODO copy on-heap because limitation with thrift server code.  THRIFT-883
+        // Other servers that support thrift should be able to support this
         final MappedByteBuffer data = channel.map(FileChannel.MapMode.READ_ONLY, offset, readLen);
         final ByteBuffer sendData = ByteBuffer.allocate(data.remaining());
         sendData.put(data);
